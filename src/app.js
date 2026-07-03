@@ -1,6 +1,7 @@
 import express from "express";
 
 import routes from "./routes/index.js";
+import { authMiddleware } from "./middlewares/auth.middleware.js";
 
 const app = express();
 
@@ -13,7 +14,8 @@ app.get("/", (req, res) => {
   });
 });
 
-// Toutes les routes de l'API
+app.use("/api", authMiddleware);
+
 app.use("/api", routes);
 
 export default app;
