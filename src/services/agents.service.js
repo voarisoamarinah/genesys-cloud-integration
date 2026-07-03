@@ -1,22 +1,21 @@
-import { getUsers, getUserQueues, getUserById } from "./genesys/api.service.js";
+import { getUsers, getUserById, getUserQueues } from "./genesys/api.service.js";
 import { mapAgent } from "../mappers/agent.mapper.js";
+import { BadRequestError, NotFoundError } from "../utils/errors.js";
 
 export async function getAgents(token, queueFilter) {
+    if (queueFilter !== undefined && typeof queueFilter !== "string") {
+        throw new BadRequestError("Invalid 'queue' filter");
+    }
+
     const users = await getUsers(token);
 
     const agents = await Promise.all(
         users.entities.map(async (user) => {
             const queuesEntities = await getUserQueues(user.id, token);
             const queues = queuesEntities.map(q => q.name);
-
             const onQueue = user.routingStatus?.status !== "OFF_QUEUE";
 
-            const extraData = {
-                onQueue,
-                queues
-            };
-
-            return mapAgent(user, extraData);
+            return mapAgent(user, { onQueue, queues });
         })
     );
 
@@ -35,10 +34,22 @@ export async function getAvailableAgents(token, queueFilter) {
 }
 
 export async function getAgentAvailability(token, agentId) {
-    const user = await getUserById(agentId, token);
+    if (!agentId || typeof agentId !== "string" || agentId.trim().length === 0) {
+        throw new BadRequestError("Invalid agent id");
+    }
+
+    let user;
+    try {
+        user = await getUserById(agentId, token);
+    } catch (error) {
+        if (error.statusCode === 404) {
+            throw new NotFoundError(`Agent ${agentId} not found`);
+        }
+        throw error;
+    }
+
     const queuesEntities = await getUserQueues(agentId, token);
     const queues = queuesEntities.map(q => q.name);
-
     const onQueue = user.routingStatus?.status !== "OFF_QUEUE";
 
     const agent = mapAgent(user, { onQueue, queues });
