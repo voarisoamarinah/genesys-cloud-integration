@@ -21,10 +21,15 @@ export async function getAgents(token, queueFilter) {
     );
 
     if (queueFilter) {
-        return agents.filter(agent => 
+        return agents.filter(agent =>
             agent.queues.some(q => q.toLowerCase() === queueFilter.toLowerCase())
         );
     }
 
     return agents;
+}
+
+export async function getAvailableAgents(token, queueFilter) {
+    const agents = await getAgents(token, queueFilter);
+    return agents.filter(agent => agent.canReceiveInteraction === true);
 }
