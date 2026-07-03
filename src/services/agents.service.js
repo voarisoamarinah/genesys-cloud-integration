@@ -9,7 +9,7 @@ export async function getAgents(token) {
             const queuesEntities = await getUserQueues(user.id, token);
             const queues = queuesEntities.map(q => q.name);
 
-            const onQueue = user.presence?.presenceDefinition?.systemPresence === "ON_QUEUE";
+            const onQueue = user.routingStatus?.status !== "OFF_QUEUE";
 
             const extraData = {
                 onQueue,

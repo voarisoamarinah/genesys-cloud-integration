@@ -1,7 +1,7 @@
 import { canReceiveInteraction } from "../rules/availability.rule.js";
 
 export function mapAgent(user, extraData = {}) {
-    const presence = user.presence?.presenceDefinition?.id || "Unknown";
+    const presence = user.presence?.presenceDefinition?.systemPresence || "Unknown";
     const routingStatus = user.routingStatus?.status || "UNKNOWN";
     const onQueue = extraData.onQueue ?? false;
 

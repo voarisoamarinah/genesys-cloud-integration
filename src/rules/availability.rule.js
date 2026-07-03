@@ -1,7 +1,7 @@
 export function canReceiveInteraction({ presence, onQueue, routingStatus }) {
     return (
-        presence === "Available" &&
+        presence?.toLowerCase() === "available" &&
         onQueue === true &&
-        routingStatus === "IDLE"
+        routingStatus?.toLowerCase() === "idle"
     );
 }

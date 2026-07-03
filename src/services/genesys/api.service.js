@@ -1,16 +1,32 @@
 import client from "./httpClient.js";
 
 export async function getUsers(token) {
-    const response = await client.get("/api/v2/users", {
-        params: {
-            expand: "presence,routingStatus,division,groups"
-        },
-        headers: {
-            Authorization: `Bearer ${token}`
-        }
-    });
+    let allUsers = [];
+    let pageNumber = 1;
+    let pageCount = 1;
 
-    return response.data;
+    do {
+        const response = await client.get("/api/v2/users", {
+            params: {
+                expand: "presence,routingStatus,division,groups,integrationPresence",
+                pageSize: 100,
+                pageNumber: pageNumber
+            },
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const data = response.data;
+        if (data.entities && data.entities.length > 0) {
+            allUsers.push(...data.entities);
+        }
+        
+        pageCount = data.pageCount || 1;
+        pageNumber++;
+    } while (pageNumber <= pageCount);
+
+    return { entities: allUsers };
 }
 
 export async function getUserQueues(userId, token) {
@@ -21,4 +37,4 @@ export async function getUserQueues(userId, token) {
     });
 
     return response.data.entities || [];
-}
+}
