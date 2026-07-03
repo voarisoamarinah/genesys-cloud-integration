@@ -1,4 +1,4 @@
-import { getUsers } from "./genesys/api.service.js";
+import { getUsers, getUserQueues } from "./genesys/api.service.js";
 import { mapAgent } from "../mappers/agent.mapper.js";
 
 export async function getAgents() {
@@ -6,11 +6,14 @@ export async function getAgents() {
 
     const agents = await Promise.all(
         users.entities.map(async (user) => {
+            const queuesEntities = await getUserQueues(user.id);
+            const queues = queuesEntities.map(q => q.name);
+
+            const onQueue = user.presence?.presenceDefinition?.systemPresence === "ON_QUEUE";
+
             const extraData = {
-                presence: "Available",
-                routingStatus: "IDLE",
-                onQueue: true,
-                queues: ["Support"]
+                onQueue,
+                queues
             };
 
             return mapAgent(user, extraData);

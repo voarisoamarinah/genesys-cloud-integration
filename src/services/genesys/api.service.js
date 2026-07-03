@@ -9,3 +9,8 @@ export async function getUsers() {
 
     return response.data;
 }
+
+export async function getUserQueues(userId) {
+    const response = await client.get(`/api/v2/users/${userId}/queues`);
+    return response.data.entities || [];
+}
