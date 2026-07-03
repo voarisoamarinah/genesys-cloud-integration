@@ -21,12 +21,25 @@ export async function getUsers(token) {
         if (data.entities && data.entities.length > 0) {
             allUsers.push(...data.entities);
         }
-        
+
         pageCount = data.pageCount || 1;
         pageNumber++;
     } while (pageNumber <= pageCount);
 
     return { entities: allUsers };
+}
+
+export async function getUserById(userId, token) {
+    const response = await client.get(`/api/v2/users/${userId}`, {
+        params: {
+            expand: "presence,routingStatus,division,groups,integrationPresence"
+        },
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
+
+    return response.data;
 }
 
 export async function getUserQueues(userId, token) {
