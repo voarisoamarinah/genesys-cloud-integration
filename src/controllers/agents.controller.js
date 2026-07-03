@@ -2,7 +2,8 @@ import { getAgents } from "../services/agents.service.js";
 
 export async function getAgentsController(req, res) {
   try {
-    const agents = await getAgents();
+    const token = req.genesysToken;
+    const agents = await getAgents(token);
 
     res.status(200).json({
       success: true,

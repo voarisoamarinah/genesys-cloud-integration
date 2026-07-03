@@ -1,4 +1,7 @@
-export function authMiddleware(req, res, next) {
+import axios from "axios";
+import config from "../config/genesys.config.js";
+
+export async function authMiddleware(req, res, next) {
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
@@ -26,20 +29,24 @@ export function authMiddleware(req, res, next) {
         });
     }
 
-    const isValid = validateToken(token);
+    try {
+        // Valider le token en appelant l'endpoint 'me' de Genesys Cloud
+        await axios.get(`${config.apiUrl}/api/v2/users/me`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
 
-    if (!isValid) {
-        return res.status(403).json({
+        req.genesysToken = token;
+        next();
+    } catch (error) {
+        const errorMsg = error.response?.data?.message || error.message;
+        console.error("Genesys token validation failed:", errorMsg);
+
+        return res.status(401).json({
             success: false,
-            message: "Invalid token"
+            message: "Invalid or expired Genesys Cloud token",
+            error: errorMsg
         });
     }
-
-    req.token = token;
-
-    next();
-}
-
-function validateToken(token) {
-    return token.length > 10;
 }

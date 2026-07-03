@@ -11,9 +11,11 @@ const client = axios.create({
 
 client.interceptors.request.use(
     async (request) => {
-        const token = await getAccessToken();
-
-        request.headers.Authorization = `Bearer ${token}`;
+        const hasAuth = request.headers.Authorization || request.headers.authorization || (request.headers.get && request.headers.get('Authorization'));
+        if (!hasAuth) {
+            const token = await getAccessToken();
+            request.headers.Authorization = `Bearer ${token}`;
+        }
 
         return request;
     },
