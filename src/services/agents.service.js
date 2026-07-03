@@ -1,7 +1,7 @@
 import { getUsers, getUserQueues } from "./genesys/api.service.js";
 import { mapAgent } from "../mappers/agent.mapper.js";
 
-export async function getAgents(token) {
+export async function getAgents(token, queueFilter) {
     const users = await getUsers(token);
 
     const agents = await Promise.all(
@@ -19,6 +19,12 @@ export async function getAgents(token) {
             return mapAgent(user, extraData);
         })
     );
+
+    if (queueFilter) {
+        return agents.filter(agent => 
+            agent.queues.some(q => q.toLowerCase() === queueFilter.toLowerCase())
+        );
+    }
 
     return agents;
 }
